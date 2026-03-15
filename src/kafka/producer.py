@@ -8,8 +8,6 @@ import argparse
 
 from confluent_kafka import Producer
 
-from src.data.simulator import ClickstreamSimulator
-
 logger = logging.getLogger(__name__)
 
 
@@ -50,6 +48,7 @@ class ClickstreamProducer:
 
     def simulate_live(self, events_per_second: float = 10.0) -> None:
         """Continuously produce events using the ClickstreamSimulator."""
+        from src.data.simulator import ClickstreamSimulator
         sim = ClickstreamSimulator()
         logger.info("Starting live simulation at %.1f events/sec...", events_per_second)
         for event in sim.stream(events_per_second):
@@ -57,6 +56,9 @@ class ClickstreamProducer:
 
 
 if __name__ == "__main__":
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument("--rate", type=float, default=10.0, help="Events per second")
