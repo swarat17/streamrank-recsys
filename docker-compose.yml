@@ -111,6 +111,7 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./infra/grafana/dashboard.json:/var/lib/grafana/dashboards/recsys.json:ro
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
 
   # ─── FastAPI App ─────────────────────────────────────────────────────────────
   fastapi:

@@ -6,7 +6,8 @@ import time
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 from src.serving.schemas import (
     FeedbackRequest,
@@ -64,6 +65,9 @@ def _load_pipeline():
         "ranker_model_path": ranker_path,
         "cf_factors": str(cf_model.factors),
     }
+
+    from src.monitoring.metrics import set_model_info
+    set_model_info(cf_version="1.0", ranker_version="1.0")
 
     logger.info("Pipeline ready.")
     return pipeline, redis_store
@@ -124,6 +128,15 @@ def health():
 @app.get("/model-info")
 def model_info():
     return {"model_info": _model_info, "pipeline_version": "1.0.0"}
+
+
+@app.get("/metrics")
+def metrics():
+    """Prometheus scrape endpoint."""
+    return Response(
+        content=generate_latest(),
+        media_type=CONTENT_TYPE_LATEST,
+    )
 
 
 @app.post("/feedback")

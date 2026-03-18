@@ -7,6 +7,7 @@ from typing import Any, Optional
 import numpy as np
 
 from src.serving.schemas import RecommendationResponse, RecommendedItem
+from src.monitoring.metrics import observe_request
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +107,19 @@ class RecommendationPipeline:
             "user=%s candidates=%d results=%d retrieval=%.1fms ranking=%.1fms total=%.1fms",
             user_id, len(candidates), len(results), retrieval_ms, ranking_ms, total_ms,
         )
+
+        device = context.get("device", "desktop")
+        status = "success" if results else "cold_start"
+        observe_request(
+            recommendations=results,
+            retrieval_ms=retrieval_ms,
+            ranking_ms=ranking_ms,
+            total_ms=total_ms,
+            n_candidates=len(candidates),
+            status=status,
+            device=device,
+        )
+
         return RecommendationResponse(
             user_id=user_id,
             recommendations=results,
