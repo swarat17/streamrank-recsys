@@ -112,6 +112,30 @@ services:
       - grafana_data:/var/lib/grafana
       - ./infra/grafana/dashboard.json:/var/lib/grafana/dashboards/recsys.json:ro
 
+  # ─── FastAPI App ─────────────────────────────────────────────────────────────
+  fastapi:
+    build: .
+    container_name: recsys-fastapi
+    depends_on:
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ES_HOST: http://elasticsearch:9200
+      CF_MODEL_PATH: models/cf
+      RANKER_MODEL_PATH: models/ranker
+      MLFLOW_TRACKING_URI: mlruns
+    volumes:
+      - ./models:/app/models:ro
+      - ./mlruns:/app/mlruns:ro
+    profiles:
+      - app
+
 volumes:
   redis_data:
   es_data:
