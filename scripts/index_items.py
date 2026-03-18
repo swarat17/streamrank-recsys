@@ -1,9 +1,12 @@
 """Bulk-index all items and their embeddings into Elasticsearch."""
 
-import logging
-import os
 import sys
 from pathlib import Path
+# Ensure project root is on sys.path when running as a script
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+import logging
+import os
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)

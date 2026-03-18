@@ -3,7 +3,7 @@
 import logging
 import os
 
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, NotFoundError, BadRequestError
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,13 @@ def create_index(es_host: str | None = None, recreate: bool = False) -> None:
     host = es_host or os.getenv("ES_HOST", "http://localhost:9200")
     es = Elasticsearch(host)
 
-    if es.indices.exists(index=INDEX_NAME):
+    try:
+        es.indices.get(index=INDEX_NAME)
+        index_exists = True
+    except (NotFoundError, BadRequestError):
+        index_exists = False
+
+    if index_exists:
         if recreate:
             es.indices.delete(index=INDEX_NAME)
             logger.info("Deleted existing index '%s'.", INDEX_NAME)

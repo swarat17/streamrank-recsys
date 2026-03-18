@@ -18,7 +18,7 @@ scikit-learn==1.4.2
 scipy==1.13.0
 
 # Retrieval
-elasticsearch==8.13.0
+elasticsearch==8.13.0  # must match server version — do not upgrade to 9.x
 
 # Serving
 fastapi==0.111.0
