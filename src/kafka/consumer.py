@@ -3,7 +3,20 @@
 import json
 import logging
 import os
+import sys
 import time
+
+# Must be set before PySpark initialises the JVM.
+# PYSPARK_PYTHON tells worker subprocesses to use this venv's interpreter
+# instead of the bare 'python' shim (which on Windows opens the MS Store).
+os.environ.setdefault("PYSPARK_PYTHON", sys.executable)
+os.environ.setdefault("PYSPARK_DRIVER_PYTHON", sys.executable)
+# Fix JAVA_HOME if the env var points to a non-existent path.
+_java_home = os.environ.get("JAVA_HOME", "")
+if not os.path.exists(os.path.join(_java_home, "bin", "java.exe")):
+    _fallback = "C:/Program Files/Java/jre1.8.0_481"
+    if os.path.exists(os.path.join(_fallback, "bin", "java.exe")):
+        os.environ["JAVA_HOME"] = _fallback
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_json
