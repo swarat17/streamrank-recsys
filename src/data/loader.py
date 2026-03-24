@@ -30,8 +30,13 @@ def _download_raw() -> tuple[pd.DataFrame, pd.DataFrame]:
         split="full",
         trust_remote_code=True,
     )
-    reviews_df = reviews.to_pandas()
-    meta_df = meta.to_pandas()
+    # Select only needed columns before to_pandas() to avoid OOM on 43M rows
+    reviews_df = reviews.select_columns(
+        ["user_id", "asin", "rating", "timestamp", "verified_purchase"]
+    ).to_pandas()
+    meta_df = meta.select_columns(
+        ["parent_asin", "title", "categories", "price", "average_rating", "rating_number", "description"]
+    ).to_pandas()
     logger.info("Downloaded %d reviews and %d items.", len(reviews_df), len(meta_df))
     return reviews_df, meta_df
 
@@ -75,10 +80,14 @@ def _build_items(meta_df: pd.DataFrame, valid_item_ids: set) -> pd.DataFrame:
         asin = row.get("parent_asin") or row.get("asin")
         if asin not in valid_item_ids:
             continue
-        categories = row.get("categories") or []
+        categories = row.get("categories")
+        if not isinstance(categories, (list, tuple)) or len(categories) == 0:
+            categories = []
         category = categories[0] if categories else "Unknown"
-        desc_parts = row.get("description") or []
-        description = " ".join(desc_parts) if isinstance(desc_parts, list) else str(desc_parts)
+        desc_parts = row.get("description")
+        if not isinstance(desc_parts, (list, tuple)):
+            desc_parts = []
+        description = " ".join(str(p) for p in desc_parts)
         rows.append({
             "item_id": asin,
             "title": str(row.get("title") or ""),
