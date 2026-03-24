@@ -15,8 +15,9 @@ env/
 # Data (large files)
 data/processed/
 data/checkpoints/
-models/*.pkl
-models/*.bin
+models/
+*.pkl
+*.bin
 
 # MLflow
 mlruns/
