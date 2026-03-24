@@ -24,5 +24,11 @@ sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[1]
 from src.data.loader import build_dataset
 
 if __name__ == "__main__":
+    import logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s — %(message)s",
+        datefmt="%H:%M:%S",
+    )
     build_dataset()
     print("Dataset download and processing complete.")

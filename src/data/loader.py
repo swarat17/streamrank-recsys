@@ -1,11 +1,10 @@
 """Download and preprocess the Amazon Electronics dataset from HuggingFace."""
 
-import json
 import logging
-import os
 from pathlib import Path
 
 import pandas as pd
+from datasets import load_dataset
 
 logger = logging.getLogger(__name__)
 
@@ -16,71 +15,22 @@ ITEMS_PATH = PROCESSED_DIR / "items.parquet"
 MIN_USER_INTERACTIONS = 5
 MIN_ITEM_REVIEWS = 10
 
-# Raw JSONL files downloaded to the HF hub snapshot cache.
-# These are used as a fallback when the datasets library cache is broken.
-_HF_SNAPSHOT_ROOT = Path(
-    os.environ.get("HF_HOME", "G:/hf-cache"),
-    "hub/datasets--McAuley-Lab--Amazon-Reviews-2023/snapshots",
-)
-
-
-def _find_snapshot_file(subpath: str) -> Path | None:
-    """Return the first matching file inside any snapshot directory."""
-    if not _HF_SNAPSHOT_ROOT.exists():
-        return None
-    for snap in _HF_SNAPSHOT_ROOT.iterdir():
-        candidate = snap / subpath
-        if candidate.exists():
-            return candidate
-    return None
-
-
-def _load_jsonl(path: Path) -> pd.DataFrame:
-    logger.info("Loading from raw JSONL: %s", path)
-    records = []
-    with open(path, encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if line:
-                records.append(json.loads(line))
-    return pd.DataFrame(records)
-
 
 def _download_raw() -> tuple[pd.DataFrame, pd.DataFrame]:
     logger.info("Downloading Amazon Reviews 2023 — Electronics subset...")
-    from datasets import load_dataset  # local import so env vars are set first
-
-    # ── Reviews ──────────────────────────────────────────────────────────────
-    try:
-        reviews = load_dataset(
-            "McAuley-Lab/Amazon-Reviews-2023",
-            "raw_review_Electronics",
-            split="full",
-        )
-        reviews_df = reviews.to_pandas()
-    except Exception as exc:
-        logger.warning("datasets library failed for reviews (%s); trying raw JSONL.", exc)
-        raw = _find_snapshot_file("raw/review_categories/Electronics.jsonl")
-        if raw is None:
-            raise FileNotFoundError("Cannot find Electronics.jsonl in HF snapshot cache.") from exc
-        reviews_df = _load_jsonl(raw)
-
-    # ── Metadata ─────────────────────────────────────────────────────────────
-    try:
-        meta = load_dataset(
-            "McAuley-Lab/Amazon-Reviews-2023",
-            "raw_meta_Electronics",
-            split="full",
-        )
-        meta_df = meta.to_pandas()
-    except Exception as exc:
-        logger.warning("datasets library failed for meta (%s); trying raw JSONL.", exc)
-        raw = _find_snapshot_file("raw/meta_categories/meta_Electronics.jsonl")
-        if raw is None:
-            raise FileNotFoundError("Cannot find meta_Electronics.jsonl in HF snapshot cache.") from exc
-        meta_df = _load_jsonl(raw)
-
-    logger.info("Loaded %d reviews and %d items.", len(reviews_df), len(meta_df))
+    reviews = load_dataset(
+        "McAuley-Lab/Amazon-Reviews-2023",
+        "raw_review_Electronics",
+        split="full",
+    )
+    meta = load_dataset(
+        "McAuley-Lab/Amazon-Reviews-2023",
+        "raw_meta_Electronics",
+        split="full",
+    )
+    reviews_df = reviews.to_pandas()
+    meta_df = meta.to_pandas()
+    logger.info("Downloaded %d reviews and %d items.", len(reviews_df), len(meta_df))
     return reviews_df, meta_df
 
 
