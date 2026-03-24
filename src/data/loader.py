@@ -22,11 +22,13 @@ def _download_raw() -> tuple[pd.DataFrame, pd.DataFrame]:
         "McAuley-Lab/Amazon-Reviews-2023",
         "raw_review_Electronics",
         split="full",
+        trust_remote_code=True,
     )
     meta = load_dataset(
         "McAuley-Lab/Amazon-Reviews-2023",
         "raw_meta_Electronics",
         split="full",
+        trust_remote_code=True,
     )
     reviews_df = reviews.to_pandas()
     meta_df = meta.to_pandas()
