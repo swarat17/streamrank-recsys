@@ -15,6 +15,10 @@ RUN pip install --upgrade pip && \
 # ── Stage 2: runtime ─────────────────────────────────────────────────────────
 FROM python:3.10-slim AS runtime
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copy installed packages from builder
