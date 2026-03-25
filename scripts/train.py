@@ -70,8 +70,11 @@ def main(args):
         cf_uri = f"runs:/{run.info.run_id}/cf_model"
         ranker_uri = f"runs:/{run.info.run_id}/ranker_model"
 
-        mlflow.register_model(cf_uri, "collaborative-filter")
-        mlflow.register_model(ranker_uri, "xgboost-ranker")
+        try:
+            mlflow.register_model(cf_uri, "collaborative-filter")
+            mlflow.register_model(ranker_uri, "xgboost-ranker")
+        except Exception as e:
+            logger.warning("Model registry skipped (%s). Models are saved locally.", e)
 
         mlflow.set_tags({
             "stage": "production",

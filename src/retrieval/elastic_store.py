@@ -68,6 +68,13 @@ class ElasticsearchItemStore:
                 emb = embeddings.get(item_id)
                 if emb is None:
                     continue
+                def _safe_float(v):
+                    try:
+                        f = float(v)
+                        return 0.0 if (f != f) else f  # NaN check: NaN != NaN
+                    except (TypeError, ValueError):
+                        return 0.0
+
                 yield {
                     "_index": INDEX_NAME,
                     "_id": item_id,
@@ -75,8 +82,8 @@ class ElasticsearchItemStore:
                         "item_id": item_id,
                         "title": str(row.get("title", "")),
                         "category": str(row.get("category", "Unknown")),
-                        "price": float(row.get("price") or 0.0),
-                        "avg_rating": float(row.get("avg_rating") or 0.0),
+                        "price": _safe_float(row.get("price")),
+                        "avg_rating": _safe_float(row.get("avg_rating")),
                         "review_count": int(row.get("review_count") or 0),
                         "embedding": emb.tolist(),
                     },
