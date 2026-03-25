@@ -1,7 +1,6 @@
 """Unit tests for Phase 3 — collaborative filter, XGBoost ranker, embeddings."""
 
 import pickle
-from pathlib import Path
 
 import mlflow
 import numpy as np
@@ -9,7 +8,7 @@ import pandas as pd
 import pytest
 
 from src.models.collaborative import MatrixFactorizationModel
-from src.models.ranker import XGBoostRanker, FEATURE_COLS
+from src.models.ranker import XGBoostRanker
 
 # ---------------------------------------------------------------------------
 # Fixtures — small synthetic data, trained once per session
@@ -51,7 +50,6 @@ def synthetic_items():
 @pytest.fixture(scope="module")
 def trained_cf(synthetic_interactions, tmp_path_factory):
     """Train a tiny CF model (factors=4) — fast, just enough for shape checks."""
-    tmp = tmp_path_factory.mktemp("cf")
     with mlflow.start_run():
         model = MatrixFactorizationModel(factors=4, regularization=0.01, iterations=5)
         model.train(synthetic_interactions, mlflow_run=True)
@@ -62,7 +60,6 @@ def trained_cf(synthetic_interactions, tmp_path_factory):
 def trained_ranker(synthetic_interactions, synthetic_items, trained_cf, tmp_path_factory):
     """Train a tiny XGBoost ranker."""
     from src.models.ranker import build_training_data
-    tmp = tmp_path_factory.mktemp("ranker")
 
     with mlflow.start_run():
         features_df, labels = build_training_data(
@@ -89,10 +86,7 @@ class TestCollaborativeFilter:
 
     def test_cf_recommend_excludes_seen_items(self, trained_cf, synthetic_interactions):
         user_id = "u0"
-        seen = set(synthetic_interactions[synthetic_interactions["user_id"] == user_id]["item_id"])
         recs = trained_cf.recommend_for_user(user_id, n=10)
-        overlap = set(recs) & seen
-        # With filter_already_liked_items=False we rely on score ranking; just verify no crash
         # The real exclusion happens at serving time in pipeline.py
         assert isinstance(recs, list)
 

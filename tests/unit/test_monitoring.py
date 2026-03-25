@@ -1,9 +1,8 @@
 """Unit tests for Phase 6 — Prometheus metrics and diversity scoring."""
 
-import pytest
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Response
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 from src.monitoring.metrics import compute_diversity_score
 

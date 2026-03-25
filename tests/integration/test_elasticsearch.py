@@ -19,7 +19,6 @@ class TestElasticsearchIntegration:
     def test_index_and_retrieve_roundtrip(self):
         """Index 10 mock items, run kNN — at least 1 of the 10 appears in results."""
         import pandas as pd
-        from elasticsearch import Elasticsearch
         from src.retrieval.elastic_store import ElasticsearchItemStore
         from infra.elasticsearch.setup_index import create_index
 
@@ -48,7 +47,8 @@ class TestElasticsearchIntegration:
         store.bulk_index(items_df, embeddings)
 
         # Give ES a moment to make the index searchable
-        import time; time.sleep(1)
+        import time
+        time.sleep(1)
 
         user_emb = np.random.rand(CF_DIM).astype(np.float32)
         results = store.retrieve_candidates(user_emb, n=10)

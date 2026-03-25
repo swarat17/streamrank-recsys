@@ -4,8 +4,6 @@ import logging
 import time
 from typing import Any, Optional
 
-import numpy as np
-
 from src.serving.schemas import RecommendationResponse, RecommendedItem
 from src.monitoring.metrics import observe_request
 

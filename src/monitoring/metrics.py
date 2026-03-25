@@ -5,10 +5,6 @@ from prometheus_client import (
     Gauge,
     Histogram,
     Info,
-    CollectorRegistry,
-    generate_latest,
-    CONTENT_TYPE_LATEST,
-    REGISTRY,
 )
 
 # ── Latency histogram per pipeline stage ─────────────────────────────────────

@@ -1,6 +1,5 @@
 """PySpark Structured Streaming consumer for the clickstream-events Kafka topic."""
 
-import json
 import logging
 import os
 import sys
@@ -18,13 +17,13 @@ if not os.path.exists(os.path.join(_java_home, "bin", "java.exe")):
     if os.path.exists(os.path.join(_fallback, "bin", "java.exe")):
         os.environ["JAVA_HOME"] = _fallback
 
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, from_json
-from pyspark.sql.types import (
+from pyspark.sql import SparkSession  # noqa: E402
+from pyspark.sql.functions import col, from_json  # noqa: E402
+from pyspark.sql.types import (  # noqa: E402
     StructType, StructField, StringType, FloatType, MapType
 )
 
-from src.features.redis_store import RedisFeatureStore
+from src.features.redis_store import RedisFeatureStore  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

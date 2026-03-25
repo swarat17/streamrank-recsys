@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import MagicMock
 from pydantic import ValidationError
 
-from src.serving.schemas import RecommendationRequest, RecommendationResponse, RecommendedItem
+from src.serving.schemas import RecommendationRequest
 from src.serving.pipeline import RecommendationPipeline
 
 

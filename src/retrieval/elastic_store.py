@@ -3,7 +3,6 @@
 import logging
 import os
 import time
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -12,9 +11,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
 from src.models.embeddings import (
-    CF_DIM, TOTAL_DIM,
     load_embeddings, load_projection_matrix, project_user_embedding,
-    EMBEDDINGS_PATH, PROJECTION_PATH,
 )
 
 logger = logging.getLogger(__name__)

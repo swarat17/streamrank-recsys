@@ -1,10 +1,9 @@
 """Unit tests for Phase 4 — Elasticsearch candidate retrieval (mocked ES client)."""
 
 import numpy as np
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-from src.retrieval.elastic_store import ElasticsearchItemStore, _ITEM_FIELDS
+from src.retrieval.elastic_store import ElasticsearchItemStore
 
 # ---------------------------------------------------------------------------
 # Helpers

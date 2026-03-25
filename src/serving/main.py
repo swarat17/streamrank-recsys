@@ -4,7 +4,6 @@ import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from typing import Any
 
 from fastapi import FastAPI, HTTPException, Response
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
