@@ -81,11 +81,14 @@ def _load_pipeline():
 async def lifespan(app: FastAPI):
     global _pipeline, _startup_time, _redis_store
     _startup_time = time.time()
-    try:
-        _pipeline, _redis_store = _load_pipeline()
-    except Exception as e:
-        logger.error("Failed to load models: %s", e)
-        raise RuntimeError(f"Model loading failed: {e}") from e
+    if os.getenv("MODELS_OPTIONAL", "").lower() in ("1", "true"):
+        logger.warning("MODELS_OPTIONAL=true — skipping model load (CI/build validation only).")
+    else:
+        try:
+            _pipeline, _redis_store = _load_pipeline()
+        except Exception as e:
+            logger.error("Failed to load models: %s", e)
+            raise RuntimeError(f"Model loading failed: {e}") from e
     yield
     logger.info("Shutting down.")
 
