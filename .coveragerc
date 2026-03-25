@@ -1,0 +1,12 @@
+[run]
+source = src
+
+[report]
+# Omit files that require live infrastructure (Kafka, FastAPI startup, HuggingFace)
+# and are covered by integration/e2e tests instead.
+omit =
+    src/kafka/consumer.py
+    src/kafka/producer.py
+    src/serving/main.py
+    src/data/loader.py
+    src/utils/logger.py
