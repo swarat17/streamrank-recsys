@@ -82,7 +82,9 @@ async def lifespan(app: FastAPI):
     global _pipeline, _startup_time, _redis_store
     _startup_time = time.time()
     if os.getenv("MODELS_OPTIONAL", "").lower() in ("1", "true"):
-        logger.warning("MODELS_OPTIONAL=true — skipping model load (CI/build validation only).")
+        logger.warning(
+            "MODELS_OPTIONAL=true — skipping model load (CI/build validation only)."
+        )
     else:
         try:
             _pipeline, _redis_store = _load_pipeline()
