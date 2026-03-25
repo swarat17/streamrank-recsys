@@ -1,7 +1,7 @@
 # Data
 datasets==2.21.0
 pandas==2.2.2
-pyarrow==16.0.0
+pyarrow==15.0.2
 numpy==1.26.4
 
 # Streaming
