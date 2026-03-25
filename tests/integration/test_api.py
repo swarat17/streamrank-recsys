@@ -19,6 +19,7 @@ class TestAPIEndpoints:
 
     def test_health_endpoint_returns_200(self):
         import httpx
+
         resp = httpx.get(f"{self.BASE_URL}/health", timeout=5)
         assert resp.status_code == 200
         data = resp.json()
@@ -26,6 +27,7 @@ class TestAPIEndpoints:
 
     def test_recommend_endpoint_returns_items(self):
         import httpx
+
         payload = {"user_id": "integration_test_user", "n_recommendations": 5}
         resp = httpx.post(f"{self.BASE_URL}/recommend", json=payload, timeout=10)
         assert resp.status_code == 200
@@ -34,6 +36,7 @@ class TestAPIEndpoints:
 
     def test_latency_under_200ms(self):
         import httpx
+
         payload = {"user_id": "latency_test_user", "n_recommendations": 10}
         t0 = time.perf_counter()
         resp = httpx.post(f"{self.BASE_URL}/recommend", json=payload, timeout=10)

@@ -12,6 +12,7 @@ from src.serving.pipeline import RecommendationPipeline
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_item(item_id: str, score: float = 0.8) -> dict:
     return {
         "item_id": item_id,
@@ -53,7 +54,9 @@ def _make_pipeline(
     es.get_popular_items.return_value = candidates
 
     ranker = MagicMock()
-    ranker.predict_scores.return_value = [float(i) / len(candidates) for i in range(len(candidates))]
+    ranker.predict_scores.return_value = [
+        float(i) / len(candidates) for i in range(len(candidates))
+    ]
 
     fb = MagicMock()
     fb.build.side_effect = lambda sess, item, ctx: {
@@ -83,6 +86,7 @@ def _make_pipeline(
 # Schema tests
 # ---------------------------------------------------------------------------
 
+
 class TestSchemas:
     def test_request_schema_validates_correctly(self):
         req = RecommendationRequest(user_id="user_123", n_recommendations=10)
@@ -105,6 +109,7 @@ class TestSchemas:
 # ---------------------------------------------------------------------------
 # Pipeline tests
 # ---------------------------------------------------------------------------
+
 
 class TestRecommendationPipeline:
     def test_response_contains_latency_fields(self):

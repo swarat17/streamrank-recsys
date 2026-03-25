@@ -26,7 +26,9 @@ def _history_key(user_id: str) -> str:
 
 
 class RedisFeatureStore:
-    def __init__(self, host: str | None = None, port: int | None = None, client: Any = None):
+    def __init__(
+        self, host: str | None = None, port: int | None = None, client: Any = None
+    ):
         """
         Args:
             host: Redis host (defaults to REDIS_HOST env var or localhost).

@@ -35,14 +35,24 @@ def _download_raw() -> tuple[pd.DataFrame, pd.DataFrame]:
         ["user_id", "asin", "rating", "timestamp", "verified_purchase"]
     ).to_pandas()
     meta_df = meta.select_columns(
-        ["parent_asin", "title", "categories", "price", "average_rating", "rating_number", "description"]
+        [
+            "parent_asin",
+            "title",
+            "categories",
+            "price",
+            "average_rating",
+            "rating_number",
+            "description",
+        ]
     ).to_pandas()
     logger.info("Downloaded %d reviews and %d items.", len(reviews_df), len(meta_df))
     return reviews_df, meta_df
 
 
 def _build_interactions(reviews_df: pd.DataFrame) -> pd.DataFrame:
-    df = reviews_df[["user_id", "asin", "rating", "timestamp", "verified_purchase"]].copy()
+    df = reviews_df[
+        ["user_id", "asin", "rating", "timestamp", "verified_purchase"]
+    ].copy()
     df = df.rename(columns={"asin": "item_id"})
     df["timestamp"] = pd.to_numeric(df["timestamp"], errors="coerce")
     df = df.dropna(subset=["user_id", "item_id", "rating", "timestamp"])
@@ -50,14 +60,18 @@ def _build_interactions(reviews_df: pd.DataFrame) -> pd.DataFrame:
     # Two-pass filter: users >= MIN_USER_INTERACTIONS, items >= MIN_ITEM_REVIEWS
     for _ in range(2):
         user_counts = df["user_id"].value_counts()
-        df = df[df["user_id"].isin(user_counts[user_counts >= MIN_USER_INTERACTIONS].index)]
+        df = df[
+            df["user_id"].isin(user_counts[user_counts >= MIN_USER_INTERACTIONS].index)
+        ]
         item_counts = df["item_id"].value_counts()
         df = df[df["item_id"].isin(item_counts[item_counts >= MIN_ITEM_REVIEWS].index)]
 
     df = df.reset_index(drop=True)
     logger.info(
         "Interactions: %d rows, %d unique users, %d unique items.",
-        len(df), df["user_id"].nunique(), df["item_id"].nunique(),
+        len(df),
+        df["user_id"].nunique(),
+        df["item_id"].nunique(),
     )
     return df
 
@@ -88,15 +102,17 @@ def _build_items(meta_df: pd.DataFrame, valid_item_ids: set) -> pd.DataFrame:
         if not isinstance(desc_parts, (list, tuple)):
             desc_parts = []
         description = " ".join(str(p) for p in desc_parts)
-        rows.append({
-            "item_id": asin,
-            "title": str(row.get("title") or ""),
-            "category": category,
-            "price": _safe_price(row.get("price")),
-            "avg_rating": float(row.get("average_rating") or 0),
-            "review_count": int(row.get("rating_number") or 0),
-            "description_snippet": description[:200],
-        })
+        rows.append(
+            {
+                "item_id": asin,
+                "title": str(row.get("title") or ""),
+                "category": category,
+                "price": _safe_price(row.get("price")),
+                "avg_rating": float(row.get("average_rating") or 0),
+                "review_count": int(row.get("rating_number") or 0),
+                "description_snippet": description[:200],
+            }
+        )
 
     df = pd.DataFrame(rows).drop_duplicates("item_id").reset_index(drop=True)
     logger.info("Items DataFrame: %d rows.", len(df))

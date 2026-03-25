@@ -16,7 +16,9 @@ import pytest
 BASE_URL = "http://localhost:8000"
 
 
-def _post_recommend(user_id: str, n: int = 5, context: dict | None = None) -> httpx.Response:
+def _post_recommend(
+    user_id: str, n: int = 5, context: dict | None = None
+) -> httpx.Response:
     payload = {"user_id": user_id, "n_recommendations": n}
     if context:
         payload["context"] = context
@@ -26,6 +28,7 @@ def _post_recommend(user_id: str, n: int = 5, context: dict | None = None) -> ht
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.e2e
 class TestFullPipeline:

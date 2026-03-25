@@ -13,7 +13,7 @@ LATENCY_BUCKETS = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0]
 recommendation_latency_seconds = Histogram(
     "recommendation_latency_seconds",
     "End-to-end and per-stage recommendation latency",
-    labelnames=["stage"],   # retrieval | ranking | total
+    labelnames=["stage"],  # retrieval | ranking | total
     buckets=LATENCY_BUCKETS,
 )
 
@@ -21,7 +21,10 @@ recommendation_latency_seconds = Histogram(
 recommendation_requests_total = Counter(
     "recommendation_requests_total",
     "Total recommendation requests",
-    labelnames=["status", "device"],  # success | cold_start | error, mobile | desktop | tablet
+    labelnames=[
+        "status",
+        "device",
+    ],  # success | cold_start | error, mobile | desktop | tablet
 )
 
 # ── Candidate count histogram ─────────────────────────────────────────────────
@@ -45,6 +48,7 @@ model_version_info = Info(
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
 
 def compute_diversity_score(recommendations: list) -> float:
     """
@@ -79,7 +83,9 @@ def observe_request(
     device: str,
 ) -> None:
     """Record all metrics for a single completed request."""
-    recommendation_latency_seconds.labels(stage="retrieval").observe(retrieval_ms / 1000)
+    recommendation_latency_seconds.labels(stage="retrieval").observe(
+        retrieval_ms / 1000
+    )
     recommendation_latency_seconds.labels(stage="ranking").observe(ranking_ms / 1000)
     recommendation_latency_seconds.labels(stage="total").observe(total_ms / 1000)
 
@@ -90,8 +96,12 @@ def observe_request(
     recommendation_diversity_score.set(diversity)
 
 
-def set_model_info(cf_version: str = "unknown", ranker_version: str = "unknown") -> None:
-    model_version_info.info({
-        "cf_model_version": cf_version,
-        "ranker_model_version": ranker_version,
-    })
+def set_model_info(
+    cf_version: str = "unknown", ranker_version: str = "unknown"
+) -> None:
+    model_version_info.info(
+        {
+            "cf_model_version": cf_version,
+            "ranker_model_version": ranker_version,
+        }
+    )

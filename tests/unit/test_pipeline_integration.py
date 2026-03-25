@@ -19,6 +19,7 @@ from src.serving.pipeline import RecommendationPipeline
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_item(item_id: str) -> dict:
     return {
         "item_id": item_id,
@@ -33,6 +34,7 @@ def _make_item(item_id: str) -> dict:
 
 def _make_view_event(user_id: str, item_id: str) -> dict:
     import time
+
     return {
         "event_id": "evt-001",
         "user_id": user_id,
@@ -59,8 +61,11 @@ def feature_builder():
 # Tests
 # ---------------------------------------------------------------------------
 
+
 class TestPipelineIntegration:
-    def test_feature_builder_output_matches_ranker_input(self, redis_store, feature_builder):
+    def test_feature_builder_output_matches_ranker_input(
+        self, redis_store, feature_builder
+    ):
         """
         Feature dict from FeatureBuilder must contain all keys that XGBoost expects.
         """
@@ -89,7 +94,9 @@ class TestPipelineIntegration:
         assert features["session_length"] == 3
         assert features["n_recent_views"] == 3
         assert features["device_mobile"] is True
-        assert all(v is not None for v in features.values()), "Feature dict has None values"
+        assert all(
+            v is not None for v in features.values()
+        ), "Feature dict has None values"
 
     def test_cold_start_path_returns_results(self):
         """

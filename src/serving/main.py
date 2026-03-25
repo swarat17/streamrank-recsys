@@ -15,7 +15,9 @@ from src.serving.schemas import (
 )
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 # Global pipeline instance (set during startup)
 _pipeline = None
@@ -47,7 +49,9 @@ def _load_pipeline():
     proj = load_projection_matrix()
 
     redis_store = RedisFeatureStore()
-    elastic_store = ElasticsearchItemStore(embeddings=embeddings, projection_matrix=proj)
+    elastic_store = ElasticsearchItemStore(
+        embeddings=embeddings, projection_matrix=proj
+    )
     feature_builder = FeatureBuilder()
 
     pipeline = RecommendationPipeline(
@@ -66,6 +70,7 @@ def _load_pipeline():
     }
 
     from src.monitoring.metrics import set_model_info
+
     set_model_info(cf_version="1.0", ranker_version="1.0")
 
     logger.info("Pipeline ready.")
@@ -98,6 +103,7 @@ _redis_store = None
 # ------------------------------------------------------------------
 # Endpoints
 # ------------------------------------------------------------------
+
 
 @app.post("/recommend", response_model=RecommendationResponse)
 def recommend(request: RecommendationRequest):
@@ -157,6 +163,7 @@ def feedback(request: FeedbackRequest):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "src.serving.main:app",
         host=os.getenv("API_HOST", "0.0.0.0"),

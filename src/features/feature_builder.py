@@ -41,7 +41,9 @@ class FeatureBuilder:
             "user_id": session_features.get("user_id", ""),
             "candidate_item_id": candidate_id,
             "session_length": int(session_features.get("session_length", 0)),
-            "session_age_seconds": float(session_features.get("session_age_seconds", 0.0)),
+            "session_age_seconds": float(
+                session_features.get("session_age_seconds", 0.0)
+            ),
             "n_recent_views": len(recent_views),
             "candidate_in_recent_views": candidate_id in recent_views,
             "candidate_avg_rating": float(item_metadata.get("avg_rating", 0.0)),

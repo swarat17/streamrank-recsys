@@ -26,19 +26,23 @@ class TestElasticsearchIntegration:
 
         # Build 10 synthetic items + embeddings
         item_ids = [f"int_item_{i}" for i in range(10)]
-        items_df = pd.DataFrame([
-            {
-                "item_id": iid,
-                "title": f"Integration Test Item {i}",
-                "category": "Test",
-                "price": float(10 + i),
-                "avg_rating": 4.0,
-                "review_count": 50,
-                "description_snippet": "",
-            }
-            for i, iid in enumerate(item_ids)
-        ])
-        embeddings = {iid: np.random.rand(TOTAL_DIM).astype(np.float32) for iid in item_ids}
+        items_df = pd.DataFrame(
+            [
+                {
+                    "item_id": iid,
+                    "title": f"Integration Test Item {i}",
+                    "category": "Test",
+                    "price": float(10 + i),
+                    "avg_rating": 4.0,
+                    "review_count": 50,
+                    "description_snippet": "",
+                }
+                for i, iid in enumerate(item_ids)
+            ]
+        )
+        embeddings = {
+            iid: np.random.rand(TOTAL_DIM).astype(np.float32) for iid in item_ids
+        }
 
         proj = np.zeros((TOTAL_DIM, CF_DIM), dtype=np.float32)
         proj[:CF_DIM, :CF_DIM] = np.eye(CF_DIM, dtype=np.float32)
@@ -48,6 +52,7 @@ class TestElasticsearchIntegration:
 
         # Give ES a moment to make the index searchable
         import time
+
         time.sleep(1)
 
         user_emb = np.random.rand(CF_DIM).astype(np.float32)
@@ -55,6 +60,6 @@ class TestElasticsearchIntegration:
 
         result_ids = {r["item_id"] for r in results}
         overlap = result_ids & set(item_ids)
-        assert len(overlap) >= 1, (
-            f"Expected at least 1 indexed item in results, got: {result_ids}"
-        )
+        assert (
+            len(overlap) >= 1
+        ), f"Expected at least 1 indexed item in results, got: {result_ids}"

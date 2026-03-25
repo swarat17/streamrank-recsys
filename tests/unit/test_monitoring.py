@@ -11,9 +11,12 @@ from src.monitoring.metrics import compute_diversity_score
 # Diversity score tests
 # ---------------------------------------------------------------------------
 
+
 class TestDiversityScore:
     def _make_items(self, categories: list[str]) -> list[dict]:
-        return [{"item_id": f"i{i}", "category": cat} for i, cat in enumerate(categories)]
+        return [
+            {"item_id": f"i{i}", "category": cat} for i, cat in enumerate(categories)
+        ]
 
     def test_diversity_score_all_same_category(self):
         """All items from same category → diversity = 1/n."""
@@ -40,8 +43,11 @@ class TestDiversityScore:
 
     def test_diversity_works_with_objects(self):
         """compute_diversity_score also accepts objects with a .category attribute."""
+
         class Item:
-            def __init__(self, cat): self.category = cat
+            def __init__(self, cat):
+                self.category = cat
+
         items = [Item("X"), Item("Y"), Item("X")]
         score = compute_diversity_score(items)
         assert abs(score - 2 / 3) < 1e-9
@@ -50,6 +56,7 @@ class TestDiversityScore:
 # ---------------------------------------------------------------------------
 # Metrics endpoint test
 # ---------------------------------------------------------------------------
+
 
 class TestMetricsEndpoint:
     def test_metrics_endpoint_returns_200(self):

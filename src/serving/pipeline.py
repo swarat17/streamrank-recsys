@@ -75,35 +75,38 @@ class RecommendationPipeline:
 
         # ── Step 3 + 4: Feature building + XGBoost ranking ───────────────────
         t_rank_start = time.perf_counter()
-        feature_dicts = [
-            self._fb.build(session, item, context) for item in candidates
-        ]
+        feature_dicts = [self._fb.build(session, item, context) for item in candidates]
         scores = self._ranker.predict_scores(feature_dicts)
         ranking_ms = (time.perf_counter() - t_rank_start) * 1000
 
         # Sort by score, filter history, take top-n
-        ranked = sorted(
-            zip(candidates, scores), key=lambda x: x[1], reverse=True
-        )
+        ranked = sorted(zip(candidates, scores), key=lambda x: x[1], reverse=True)
         results: list[RecommendedItem] = []
         for item, score in ranked:
             if item["item_id"] in history:
                 continue
-            results.append(RecommendedItem(
-                item_id=item["item_id"],
-                title=item.get("title", ""),
-                category=item.get("category", "Unknown"),
-                price=float(item.get("price") or 0.0),
-                avg_rating=float(item.get("avg_rating") or 0.0),
-                score=float(score),
-            ))
+            results.append(
+                RecommendedItem(
+                    item_id=item["item_id"],
+                    title=item.get("title", ""),
+                    category=item.get("category", "Unknown"),
+                    price=float(item.get("price") or 0.0),
+                    avg_rating=float(item.get("avg_rating") or 0.0),
+                    score=float(score),
+                )
+            )
             if len(results) >= n:
                 break
 
         total_ms = (time.perf_counter() - t_total_start) * 1000
         logger.debug(
             "user=%s candidates=%d results=%d retrieval=%.1fms ranking=%.1fms total=%.1fms",
-            user_id, len(candidates), len(results), retrieval_ms, ranking_ms, total_ms,
+            user_id,
+            len(candidates),
+            len(results),
+            retrieval_ms,
+            ranking_ms,
+            total_ms,
         )
 
         device = context.get("device", "desktop")

@@ -14,6 +14,7 @@ from src.models.ranker import XGBoostRanker
 # Fixtures — small synthetic data, trained once per session
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(scope="module")
 def synthetic_interactions():
     """50 users × 30 items, each user has 10 interactions."""
@@ -21,30 +22,34 @@ def synthetic_interactions():
     for u in range(50):
         items = np.random.choice(30, size=10, replace=False)
         for it in items:
-            rows.append({
-                "user_id": f"u{u}",
-                "item_id": f"i{it}",
-                "rating": float(np.random.randint(1, 6)),
-                "timestamp": 1_700_000_000.0 + u * 10 + it,
-                "verified_purchase": True,
-            })
+            rows.append(
+                {
+                    "user_id": f"u{u}",
+                    "item_id": f"i{it}",
+                    "rating": float(np.random.randint(1, 6)),
+                    "timestamp": 1_700_000_000.0 + u * 10 + it,
+                    "verified_purchase": True,
+                }
+            )
     return pd.DataFrame(rows)
 
 
 @pytest.fixture(scope="module")
 def synthetic_items():
-    return pd.DataFrame([
-        {
-            "item_id": f"i{i}",
-            "title": f"Product {i}",
-            "category": f"cat_{i % 5}",
-            "price": float(10 + i),
-            "avg_rating": 4.0,
-            "review_count": 50,
-            "description_snippet": f"Description for product {i}",
-        }
-        for i in range(30)
-    ])
+    return pd.DataFrame(
+        [
+            {
+                "item_id": f"i{i}",
+                "title": f"Product {i}",
+                "category": f"cat_{i % 5}",
+                "price": float(10 + i),
+                "avg_rating": 4.0,
+                "review_count": 50,
+                "description_snippet": f"Description for product {i}",
+            }
+            for i in range(30)
+        ]
+    )
 
 
 @pytest.fixture(scope="module")
@@ -57,14 +62,20 @@ def trained_cf(synthetic_interactions, tmp_path_factory):
 
 
 @pytest.fixture(scope="module")
-def trained_ranker(synthetic_interactions, synthetic_items, trained_cf, tmp_path_factory):
+def trained_ranker(
+    synthetic_interactions, synthetic_items, trained_cf, tmp_path_factory
+):
     """Train a tiny XGBoost ranker."""
     from src.models.ranker import build_training_data
 
     with mlflow.start_run():
         features_df, labels = build_training_data(
-            synthetic_interactions, synthetic_items, trained_cf,
-            n_users=30, neg_ratio=4, seed=42,
+            synthetic_interactions,
+            synthetic_items,
+            trained_cf,
+            n_users=30,
+            neg_ratio=4,
+            seed=42,
         )
         ranker = XGBoostRanker(n_estimators=10, max_depth=3, learning_rate=0.1, seed=42)
         ranker.train(features_df, labels, mlflow_run=True)
@@ -75,10 +86,13 @@ def trained_ranker(synthetic_interactions, synthetic_items, trained_cf, tmp_path
 # CF model tests
 # ---------------------------------------------------------------------------
 
+
 class TestCollaborativeFilter:
     def test_cf_embedding_dimension(self, trained_cf):
         vec = trained_cf.get_item_embedding("i0")
-        assert vec.shape == (4,), f"Expected (4,) got {vec.shape}"  # factors=4 in fixture
+        assert vec.shape == (
+            4,
+        ), f"Expected (4,) got {vec.shape}"  # factors=4 in fixture
 
     def test_cf_recommend_returns_n_items(self, trained_cf):
         recs = trained_cf.recommend_for_user("u0", n=10)
@@ -102,6 +116,7 @@ class TestCollaborativeFilter:
 # XGBoost ranker tests
 # ---------------------------------------------------------------------------
 
+
 class TestXGBoostRanker:
     def _make_feature(self) -> dict:
         return {
@@ -123,14 +138,21 @@ class TestXGBoostRanker:
         assert len(scores) == 1
         assert 0.0 <= scores[0] <= 1.0, f"Score {scores[0]} not in [0, 1]"
 
-    def test_ranker_feature_importance_logged(self, synthetic_interactions, synthetic_items, trained_cf, tmp_path):
+    def test_ranker_feature_importance_logged(
+        self, synthetic_interactions, synthetic_items, trained_cf, tmp_path
+    ):
         """After training, MLflow run must have feature_importances.json artifact."""
         db_path = tmp_path / "mlruns.db"
         mlflow.set_tracking_uri(f"sqlite:///{db_path}")
         from src.models.ranker import build_training_data
+
         features_df, labels = build_training_data(
-            synthetic_interactions, synthetic_items, trained_cf,
-            n_users=20, neg_ratio=2, seed=0,
+            synthetic_interactions,
+            synthetic_items,
+            trained_cf,
+            n_users=20,
+            neg_ratio=2,
+            seed=0,
         )
         with mlflow.start_run() as run:
             ranker = XGBoostRanker(n_estimators=5, max_depth=2, learning_rate=0.1)
@@ -139,18 +161,22 @@ class TestXGBoostRanker:
 
         client = mlflow.tracking.MlflowClient()
         artifacts = [a.path for a in client.list_artifacts(run_id)]
-        assert any("feature_importances" in a for a in artifacts), (
-            f"No feature_importances artifact found. Got: {artifacts}"
-        )
+        assert any(
+            "feature_importances" in a for a in artifacts
+        ), f"No feature_importances artifact found. Got: {artifacts}"
 
 
 # ---------------------------------------------------------------------------
 # Item embeddings test
 # ---------------------------------------------------------------------------
 
+
 class TestItemEmbeddings:
-    def test_item_embeddings_pkl_contains_all_items(self, trained_cf, synthetic_items, tmp_path):
+    def test_item_embeddings_pkl_contains_all_items(
+        self, trained_cf, synthetic_items, tmp_path
+    ):
         from src.models.embeddings import ItemEmbeddingGenerator
+
         gen = ItemEmbeddingGenerator()
         embeddings = gen.build(trained_cf, synthetic_items)
         gen.save(
@@ -162,15 +188,16 @@ class TestItemEmbeddings:
         with open(tmp_path / "item_embeddings.pkl", "rb") as f:
             loaded = pickle.load(f)
 
-        assert len(loaded) == len(synthetic_items), (
-            f"Expected {len(synthetic_items)} embeddings, got {len(loaded)}"
-        )
+        assert len(loaded) == len(
+            synthetic_items
+        ), f"Expected {len(synthetic_items)} embeddings, got {len(loaded)}"
 
     def test_embedding_dimension_is_192(self, trained_cf, synthetic_items):
         from src.models.embeddings import ItemEmbeddingGenerator, CF_DIM, TEXT_DIM
+
         gen = ItemEmbeddingGenerator()
         embeddings = gen.build(trained_cf, synthetic_items)
         sample = next(iter(embeddings.values()))
-        assert sample.shape == (CF_DIM + TEXT_DIM,), (
-            f"Expected ({CF_DIM + TEXT_DIM},) got {sample.shape}"
-        )
+        assert sample.shape == (
+            CF_DIM + TEXT_DIM,
+        ), f"Expected ({CF_DIM + TEXT_DIM},) got {sample.shape}"

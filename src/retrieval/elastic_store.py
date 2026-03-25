@@ -11,7 +11,9 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
 from src.models.embeddings import (
-    load_embeddings, load_projection_matrix, project_user_embedding,
+    load_embeddings,
+    load_projection_matrix,
+    project_user_embedding,
 )
 
 logger = logging.getLogger(__name__)
@@ -55,7 +57,9 @@ class ElasticsearchItemStore:
     # Indexing
     # ------------------------------------------------------------------
 
-    def bulk_index(self, items_df: pd.DataFrame, embeddings: dict[str, np.ndarray]) -> None:
+    def bulk_index(
+        self, items_df: pd.DataFrame, embeddings: dict[str, np.ndarray]
+    ) -> None:
         """Bulk-index all items with their embeddings into Elasticsearch."""
         t0 = time.time()
 
@@ -65,6 +69,7 @@ class ElasticsearchItemStore:
                 emb = embeddings.get(item_id)
                 if emb is None:
                     continue
+
                 def _safe_float(v):
                     try:
                         f = float(v)
@@ -93,7 +98,9 @@ class ElasticsearchItemStore:
             logger.warning("Bulk index: %d errors", len(errors))
         logger.info(
             "Indexed %d items in %.1fs (%.0f items/sec).",
-            success, elapsed, success / elapsed if elapsed > 0 else 0,
+            success,
+            elapsed,
+            success / elapsed if elapsed > 0 else 0,
         )
 
     # ------------------------------------------------------------------
@@ -112,16 +119,17 @@ class ElasticsearchItemStore:
         query_vec = project_user_embedding(user_embedding, proj)
         return self._knn_query(query_vec.tolist(), n)
 
-    def retrieve_by_items(
-        self, item_ids: list[str], n: int = 100
-    ) -> list[dict]:
+    def retrieve_by_items(self, item_ids: list[str], n: int = 100) -> list[dict]:
         """
         Cold-start retrieval: average embeddings of given item_ids, then kNN search.
         """
         embeddings = self._get_embeddings()
         vecs = [embeddings[iid] for iid in item_ids if iid in embeddings]
         if not vecs:
-            logger.warning("retrieve_by_items: none of %d items found in embeddings.", len(item_ids))
+            logger.warning(
+                "retrieve_by_items: none of %d items found in embeddings.",
+                len(item_ids),
+            )
             return []
 
         avg_vec = np.mean(vecs, axis=0).astype(np.float32)
@@ -159,13 +167,13 @@ class ElasticsearchItemStore:
     def _hit_to_dict(hit: dict) -> dict:
         src = hit["_source"]
         return {
-            "item_id":      src.get("item_id", hit["_id"]),
-            "title":        src.get("title", ""),
-            "category":     src.get("category", "Unknown"),
-            "price":        src.get("price", 0.0),
-            "avg_rating":   src.get("avg_rating", 0.0),
+            "item_id": src.get("item_id", hit["_id"]),
+            "title": src.get("title", ""),
+            "category": src.get("category", "Unknown"),
+            "price": src.get("price", 0.0),
+            "avg_rating": src.get("avg_rating", 0.0),
             "review_count": src.get("review_count", 0),
-            "_score":       hit.get("_score", 0.0),
+            "_score": hit.get("_score", 0.0),
         }
 
     def get_popular_items(self, n: int = 50) -> list[dict]:

@@ -39,7 +39,9 @@ def _make_store(n_candidates: int = 100) -> tuple[ElasticsearchItemStore, MagicM
     mock_es.search.return_value = _mock_es_response(n_candidates)
 
     # Small synthetic embeddings for cold-start / retrieve_by_items tests
-    embeddings = {f"item_{i}": np.random.rand(TOTAL_DIM).astype(np.float32) for i in range(20)}
+    embeddings = {
+        f"item_{i}": np.random.rand(TOTAL_DIM).astype(np.float32) for i in range(20)
+    }
     proj = np.zeros((TOTAL_DIM, CF_DIM), dtype=np.float32)
     proj[:CF_DIM, :CF_DIM] = np.eye(CF_DIM, dtype=np.float32)
 
@@ -52,6 +54,7 @@ def _make_store(n_candidates: int = 100) -> tuple[ElasticsearchItemStore, MagicM
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestElasticsearchItemStore:
     def test_retrieve_returns_n_candidates(self):
@@ -79,10 +82,12 @@ class TestElasticsearchItemStore:
         """search_by_text calls ES with a match query and returns results."""
         store, mock_es = _make_store(n_candidates=5)
         mock_es.search.return_value = {
-            "hits": {"hits": [
-                _make_hit("h1", "Wireless Headphones Pro"),
-                _make_hit("h2", "Bluetooth Headphones"),
-            ]}
+            "hits": {
+                "hits": [
+                    _make_hit("h1", "Wireless Headphones Pro"),
+                    _make_hit("h2", "Bluetooth Headphones"),
+                ]
+            }
         }
         results = store.search_by_text("wireless headphones", n=5)
         assert len(results) > 0

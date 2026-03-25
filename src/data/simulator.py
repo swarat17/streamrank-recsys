@@ -19,7 +19,13 @@ DEVICES = ["mobile", "desktop", "tablet"]
 # Most sessions are: view → view → ... → (maybe add_to_cart) → (rarely purchase)
 _SESSION_FLOW = {
     "start": {"view": 0.70, "search": 0.30},
-    "view":  {"view": 0.60, "search": 0.15, "add_to_cart": 0.20, "purchase": 0.03, "end": 0.02},
+    "view": {
+        "view": 0.60,
+        "search": 0.15,
+        "add_to_cart": 0.20,
+        "purchase": 0.03,
+        "end": 0.02,
+    },
     "search": {"view": 0.80, "search": 0.10, "end": 0.10},
     "add_to_cart": {"view": 0.50, "purchase": 0.20, "add_to_cart": 0.10, "end": 0.20},
     "purchase": {"end": 1.0},
@@ -82,19 +88,21 @@ class ClickstreamSimulator:
             item_id = random.choice(self._item_ids)
             page = _PAGE_FOR_EVENT.get(current_event_type, "home")
 
-            events.append({
-                "event_id": str(uuid.uuid4()),
-                "user_id": user_id,
-                "item_id": item_id,
-                "event_type": current_event_type,
-                "session_id": session_id,
-                "timestamp": ts,
-                "metadata": {
-                    "page": page,
-                    "referrer": referrer,
-                    "device": device,
-                },
-            })
+            events.append(
+                {
+                    "event_id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "item_id": item_id,
+                    "event_type": current_event_type,
+                    "session_id": session_id,
+                    "timestamp": ts,
+                    "metadata": {
+                        "page": page,
+                        "referrer": referrer,
+                        "device": device,
+                    },
+                }
+            )
             ts += random.uniform(5, 120)  # 5s–2min between events
             current_event_type = _next_event_type(current_event_type)
 

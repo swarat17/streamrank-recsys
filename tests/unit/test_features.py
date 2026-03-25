@@ -11,6 +11,7 @@ from src.features.feature_builder import FeatureBuilder
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def redis_store():
     """RedisFeatureStore backed by fakeredis — no real Redis needed."""
@@ -30,12 +31,14 @@ def view_event():
             "timestamp": time.time(),
             "metadata": {"page": "product", "referrer": "google", "device": "desktop"},
         }
+
     return _make
 
 
 # ---------------------------------------------------------------------------
 # RedisFeatureStore tests
 # ---------------------------------------------------------------------------
+
 
 class TestRedisFeatureStore:
     def test_update_session_appends_recent_views(self, redis_store, view_event):
@@ -64,8 +67,12 @@ class TestRedisFeatureStore:
         redis_store.update_session("user_1", view_event())
         features = redis_store.get_session_features("user_1")
         required_keys = {
-            "user_id", "recent_views", "session_length",
-            "last_seen_timestamp", "session_age_seconds", "has_cart_item",
+            "user_id",
+            "recent_views",
+            "session_length",
+            "last_seen_timestamp",
+            "session_age_seconds",
+            "has_cart_item",
         }
         assert required_keys.issubset(set(features.keys()))
 
@@ -81,9 +88,17 @@ class TestRedisFeatureStore:
 # ---------------------------------------------------------------------------
 
 REQUIRED_FEATURE_KEYS = {
-    "user_id", "candidate_item_id", "session_length", "session_age_seconds",
-    "n_recent_views", "candidate_in_recent_views", "candidate_avg_rating",
-    "candidate_price", "candidate_review_count", "time_of_day", "device_mobile",
+    "user_id",
+    "candidate_item_id",
+    "session_length",
+    "session_age_seconds",
+    "n_recent_views",
+    "candidate_in_recent_views",
+    "candidate_avg_rating",
+    "candidate_price",
+    "candidate_review_count",
+    "time_of_day",
+    "device_mobile",
 }
 
 
@@ -113,8 +128,18 @@ class TestFeatureBuilder:
         session = redis_store.get_session_features("user_1")
 
         builder = FeatureBuilder()
-        item_seen = {"item_id": "item_A", "avg_rating": 4.0, "price": 10.0, "review_count": 50}
-        item_unseen = {"item_id": "item_Z", "avg_rating": 3.0, "price": 5.0, "review_count": 10}
+        item_seen = {
+            "item_id": "item_A",
+            "avg_rating": 4.0,
+            "price": 10.0,
+            "review_count": 50,
+        }
+        item_unseen = {
+            "item_id": "item_Z",
+            "avg_rating": 3.0,
+            "price": 5.0,
+            "review_count": 10,
+        }
 
         assert builder.build(session, item_seen)["candidate_in_recent_views"] is True
         assert builder.build(session, item_unseen)["candidate_in_recent_views"] is False

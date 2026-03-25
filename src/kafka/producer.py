@@ -17,7 +17,9 @@ class ClickstreamProducer:
         bootstrap_servers: str | None = None,
         topic: str = "clickstream-events",
     ):
-        servers = bootstrap_servers or os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+        servers = bootstrap_servers or os.getenv(
+            "KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"
+        )
         self._topic = topic
         self._producer = Producer({"bootstrap.servers": servers})
         logger.info("ClickstreamProducer connected to %s, topic=%s", servers, topic)
@@ -44,11 +46,14 @@ class ClickstreamProducer:
         self._producer.flush()
         elapsed = time.time() - t0
         rate = len(events) / elapsed if elapsed > 0 else float("inf")
-        logger.info("Sent %d events in %.2fs (%.0f events/sec)", len(events), elapsed, rate)
+        logger.info(
+            "Sent %d events in %.2fs (%.0f events/sec)", len(events), elapsed, rate
+        )
 
     def simulate_live(self, events_per_second: float = 10.0) -> None:
         """Continuously produce events using the ClickstreamSimulator."""
         from src.data.simulator import ClickstreamSimulator
+
         sim = ClickstreamSimulator()
         logger.info("Starting live simulation at %.1f events/sec...", events_per_second)
         for event in sim.stream(events_per_second):
@@ -58,6 +63,7 @@ class ClickstreamProducer:
 if __name__ == "__main__":
     import sys
     from pathlib import Path
+
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
